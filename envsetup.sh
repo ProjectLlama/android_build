@@ -19,6 +19,8 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - mkap:     Builds the module(s) using mka and pushes them to the device.
 - cmka:     Cleans and builds using mka.
 - reposync: Parallel repo sync using ionice and SCHED_BATCH.
+- installboot: Installs a boot.img to the connected device.
+- installrecovery: Installs a recovery.img to the connected device.
 
 Look at the source to view more functions. The complete list is:
 EOF
@@ -652,6 +654,7 @@ function eat()
         MODVERSION=`sed -n -e'/ro\.cm\.version/s/.*=//p' $OUT/system/build.prop`
         ZIPFILE=cm-$MODVERSION.zip
         ZIPPATH=$OUT/$ZIPFILE
+        MD5SUMFILE=$ZIPPATH.md5sum
         if [ ! -f $ZIPPATH ] ; then
             echo "Nothing to eat"
             return 1
@@ -673,10 +676,11 @@ function eat()
         if adb push $ZIPPATH /storage/sdcard0/ ; then
             # Optional path for sdcard0 in recovery
             [ -z "$1" ] && DIR=sdcard || DIR=$1
+            MD5FILE=/$DIR/$ZIPFILE.md5
             cat << EOF > /tmp/command
 --update_package=/$DIR/$ZIPFILE
 EOF
-            if adb push /tmp/command /cache/recovery/ ; then
+            if adb push /tmp/command /cache/recovery/ && adb push $MD5SUMFILE $MD5FILE; then
                 echo "Rebooting into recovery for installation"
                 adb reboot recovery
             fi
@@ -687,6 +691,16 @@ EOF
         return 1
     fi
     return $?
+}
+
+function omnom
+{
+    if [ $# -gt 0 -o -z "$TARGET_PRODUCT" ]; then
+        brunch $*
+    else
+        mka bacon
+    fi
+    eat
 }
 
 function gettop
@@ -1159,7 +1173,7 @@ function smoketest()
         return
     fi
 
-    (cd "$T" && mmm tests/SmokeTest) &&
+    (cd "$T" && make SmokeTest SmokeTestApp) &&
       adb uninstall com.android.smoketest > /dev/null &&
       adb uninstall com.android.smoketest.tests > /dev/null &&
       adb install $ANDROID_PRODUCT_OUT/data/app/SmokeTestApp.apk &&
@@ -1239,12 +1253,12 @@ function cmremote()
           return 0
         fi
     fi
-    CMUSER=`git config --get review.review.cyanogenmod.com.username`
+    CMUSER=`git config --get review.review.cyanogenmod.org.username`
     if [ -z "$CMUSER" ]
     then
-        git remote add cmremote ssh://review.cyanogenmod.com:29418/$GERRIT_REMOTE
+        git remote add cmremote ssh://review.cyanogenmod.org:29418/$GERRIT_REMOTE
     else
-        git remote add cmremote ssh://$CMUSER@review.cyanogenmod.com:29418/$GERRIT_REMOTE
+        git remote add cmremote ssh://$CMUSER@review.cyanogenmod.org:29418/$GERRIT_REMOTE
     fi
     echo You can now push to "cmremote".
 }
@@ -1306,6 +1320,39 @@ function installboot()
     fi
 }
 
+function installrecovery()
+{
+    if [ ! -e "$OUT/recovery/root/etc/recovery.fstab" ];
+    then
+        echo "No recovery.fstab found. Build recovery first."
+        return 1
+    fi
+    if [ ! -e "$OUT/recovery.img" ];
+    then
+        echo "No recovery.img found. Run make recoveryimage first."
+        return 1
+    fi
+    PARTITION=`grep "^\/recovery" $OUT/recovery/root/etc/recovery.fstab | awk {'print $3'}`
+    if [ -z "$PARTITION" ];
+    then
+        echo "Unable to determine recovery partition."
+        return 1
+    fi
+    adb start-server
+    adb root
+    sleep 1
+    adb wait-for-device
+    adb remount
+    adb wait-for-device
+    if (adb shell cat /system/build.prop | grep -q "ro.cm.device=$CM_BUILD");
+    then
+        adb push $OUT/recovery.img /cache/
+        adb shell dd if=/cache/recovery.img of=$PARTITION
+        echo "Installation complete."
+    else
+        echo "The connected device does not appear to be $CM_BUILD, run away!"
+    fi
+}
 
 function makerecipe() {
   if [ -z "$1" ]
@@ -1341,7 +1388,7 @@ function cmgerrit() {
         $FUNCNAME help
         return 1
     fi
-    local user=`git config --get review.review.cyanogenmod.com.username`
+    local user=`git config --get review.review.cyanogenmod.org.username`
     local review=`git config --get remote.github.review`
     local project=`git config --get remote.github.projectname`
     local command=$1
@@ -1598,7 +1645,7 @@ function cmrebase() {
     echo "Bringing it up to date..."
     repo sync .
     echo "Fetching change..."
-    git fetch "http://review.cyanogenmod.com/p/$repo" "refs/changes/$refs" && git cherry-pick FETCH_HEAD
+    git fetch "http://review.cyanogenmod.org/p/$repo" "refs/changes/$refs" && git cherry-pick FETCH_HEAD
     if [ "$?" != "0" ]; then
         echo "Error cherry-picking. Not uploading!"
         return
@@ -1667,9 +1714,6 @@ function dopush()
     local func=$1
     shift
 
-    # Get product name from cm_<product>
-    PRODUCT=`echo $TARGET_PRODUCT | tr "_" "\n" | tail -n 1`
-
     adb start-server # Prevent unexpected starting server message from adb get-state in the next line
     if [ $(adb get-state) != device -a $(adb shell busybox test -e /sbin/recovery 2> /dev/null; echo $?) != 0 ] ; then
         echo "No device is online. Waiting for one..."
@@ -1686,27 +1730,37 @@ function dopush()
     sleep 0.3
     adb remount &> /dev/null
 
-    $func $* | tee .log
+    $func $* | tee $OUT/.log
 
     # Install: <file>
-    LOC=$(cat .log | sed -r 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g' | grep 'Install' | cut -d ':' -f 2)
+    LOC=$(cat $OUT/.log | sed -r 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g' | grep 'Install' | cut -d ':' -f 2)
 
     # Copy: <file>
-    LOC=$LOC $(cat .log | sed -r 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g' | grep 'Copy' | cut -d ':' -f 2)
+    LOC=$LOC $(cat $OUT/.log | sed -r 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g' | grep 'Copy' | cut -d ':' -f 2)
 
     for FILE in $LOC; do
         # Get target file name (i.e. system/bin/adb)
-        TARGET=$(echo $FILE | sed "s/\/$PRODUCT\//\n/" | tail -n 1)
+        TARGET=$(echo $FILE | sed "s#$OUT/##")
 
         # Don't send files that are not in /system.
         if ! echo $TARGET | egrep '^system\/' > /dev/null ; then
             continue
         else
+            case $TARGET in
+            system/app/SystemUI.apk|system/framework/*)
+                stop_n_start=true
+            ;;
+            *)
+                stop_n_start=false
+            ;;
+            esac
+            if $stop_n_start ; then adb shell stop ; fi
             echo "Pushing: $TARGET"
             adb push $FILE $TARGET
+            if $stop_n_start ; then adb shell start ; fi
         fi
     done
-    rm -f .log
+    rm -f $OUT/.log
     return 0
 }
 

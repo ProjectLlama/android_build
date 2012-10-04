@@ -24,11 +24,7 @@ KERNEL_SRC := $(TARGET_KERNEL_SOURCE)
 KERNEL_DEFCONFIG := $(TARGET_KERNEL_CONFIG)
 
 ## Internal variables
-ifeq ($(OUT_DIR),out)
-KERNEL_OUT := $(ANDROID_BUILD_TOP)/$(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ
-else
 KERNEL_OUT := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ
-endif
 KERNEL_CONFIG := $(KERNEL_OUT)/.config
 
 ifeq ($(BOARD_USES_UBOOT),true)
@@ -60,7 +56,7 @@ ifeq "$(wildcard $(KERNEL_SRC) )" ""
         $(warning * THIS IS DEPRECATED, AND WILL BE DISCONTINUED                *)
         $(warning * Please configure your device to download the kernel         *)
         $(warning * source repository to $(KERNEL_SRC))
-        $(warning * See http://wiki.cyanogenmod.com/wiki/Integrated_kernel_building)
+        $(warning * See http://wiki.cyanogenmod.org/wiki/Integrated_kernel_building)
         $(warning * for more information                                        *)
         $(warning ***************************************************************)
         FULL_KERNEL_BUILD := false
