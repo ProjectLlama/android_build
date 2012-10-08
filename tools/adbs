@@ -27,13 +27,13 @@ trace_line = re.compile("(.*)(\#[0-9]+)  (..) ([0-9a-f]{8})  ([^\r\n \t]*)")
 # returns a list containing the function name and the file/lineno
 def CallAddr2Line(lib, addr):
   global symbols_dir
-  global addr2line_cmd
-  global cppfilt_cmd
+  global addr2line_llamad
+  global cppfilt_llamad
 
   if lib != "":
-    cmd = addr2line_cmd + \
+    llamad = addr2line_llamad + \
         " -f -e " + symbols_dir + lib + " 0x" + addr
-    stream = os.popen(cmd)
+    stream = os.popen(llamad)
     lines = stream.readlines()
     list = map(string.strip, lines)
   else:
@@ -42,8 +42,8 @@ def CallAddr2Line(lib, addr):
     # Name like "move_forward_type<JavaVMOption>" causes troubles
     mangled_name = re.sub('<', '\<', list[0]);
     mangled_name = re.sub('>', '\>', mangled_name);
-    cmd = cppfilt_cmd + " " + mangled_name
-    stream = os.popen(cmd)
+    llamad = cppfilt_llamad + " " + mangled_name
+    stream = os.popen(llamad)
     list[0] = stream.readline()
     stream.close()
     list = map(string.strip, list)
@@ -57,7 +57,7 @@ def CallAddr2Line(lib, addr):
 # containing function of the specified address
 ###############################################################################
 def CallObjdump(lib, addr):
-  global objdump_cmd
+  global objdump_llamad
   global symbols_dir
 
   unknown = "(unknown)"
@@ -72,11 +72,11 @@ def CallObjdump(lib, addr):
     uname = "linux-x86"
   if lib != "":
     next_addr = string.atoi(addr, 16) + 1
-    cmd = objdump_cmd \
+    llamad = objdump_llamad \
         + " -C -d --start-address=0x" + addr + " --stop-address=" \
         + str(next_addr) \
         + " " + symbols_dir + lib
-    stream = os.popen(cmd)
+    stream = os.popen(llamad)
     lines = stream.readlines()
     map(string.strip, lines)
     stream.close()
@@ -112,10 +112,10 @@ def FindSymbolsDir():
   try:
     path = os.environ['ANDROID_PRODUCT_OUT'] + "/symbols"
   except:
-    cmd = "CALLED_FROM_SETUP=true BUILD_SYSTEM=build/core " \
+    llamad = "CALLED_FROM_SETUP=true BUILD_SYSTEM=build/core " \
       + "SRC_TARGET_DIR=build/target make -f build/core/config.mk " \
       + "dumpvar-abs-TARGET_OUT_UNSTRIPPED"
-    stream = os.popen(cmd)
+    stream = os.popen(llamad)
     str = stream.read()
     stream.close()
     path = str.strip()
@@ -130,9 +130,9 @@ def FindSymbolsDir():
 # determine the path of binutils
 ###############################################################################
 def SetupToolsPath():
-  global addr2line_cmd
-  global objdump_cmd
-  global cppfilt_cmd
+  global addr2line_llamad
+  global objdump_llamad
+  global cppfilt_llamad
   global symbols_dir
 
   uname = os.uname()[0]
@@ -141,22 +141,22 @@ def SetupToolsPath():
   elif uname == "Linux":
     uname = "linux-x86"
   prefix = "./prebuilts/gcc/" + uname + "/arm/arm-linux-androideabi-4.6/bin/"
-  addr2line_cmd = prefix + "arm-linux-androideabi-addr2line"
+  addr2line_llamad = prefix + "arm-linux-androideabi-addr2line"
 
-  if (not os.path.exists(addr2line_cmd)):
+  if (not os.path.exists(addr2line_llamad)):
     try:
       prefix = os.environ['ANDROID_BUILD_TOP'] + "/prebuilts/gcc/" + \
                uname + "/arm/arm-linux-androideabi-4.6/bin/"
     except:
       prefix = "";
 
-    addr2line_cmd = prefix + "arm-linux-androideabi-addr2line"
-    if (not os.path.exists(addr2line_cmd)):
-      print addr2line_cmd + " not found!"
+    addr2line_llamad = prefix + "arm-linux-androideabi-addr2line"
+    if (not os.path.exists(addr2line_llamad)):
+      print addr2line_llamad + " not found!"
       sys.exit(1)
 
-  objdump_cmd = prefix + "arm-linux-androideabi-objdump"
-  cppfilt_cmd = prefix + "arm-linux-androideabi-c++filt"
+  objdump_llamad = prefix + "arm-linux-androideabi-objdump"
+  cppfilt_llamad = prefix + "arm-linux-androideabi-c++filt"
 
 ###############################################################################
 # look up the function and file/line number for a raw stack trace line
@@ -185,16 +185,16 @@ def SymbolTranslation(groups):
 
 if __name__ == '__main__':
   # pass the options to adb
-  adb_cmd  = "adb " + ' '.join(sys.argv[1:])
+  adb_llamad  = "adb " + ' '.join(sys.argv[1:])
 
-  # setup addr2line_cmd and objdump_cmd
+  # setup addr2line_llamad and objdump_llamad
   SetupToolsPath()
 
   # setup the symbols directory
   FindSymbolsDir()
 
   # invoke the adb command and filter its output
-  stream = os.popen(adb_cmd)
+  stream = os.popen(adb_llamad)
   while (True):
     line = stream.readline()
 

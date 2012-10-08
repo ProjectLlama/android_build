@@ -109,9 +109,9 @@ previous_build_config_file := $(PRODUCT_OUT)/previous_build_config.mk
 # TODO: this special case for the sdk is only necessary while "sdk"
 # is a valid make target.  Eventually, it will just be a product, at
 # which point TARGET_PRODUCT will handle it and we can avoid this check
-# of MAKECMDGOALS.  The "addprefix" is just to keep things pretty.
+# of MAKELlamaDGOALS.  The "addprefix" is just to keep things pretty.
 ifneq ($(TARGET_PRODUCT),sdk)
-  building_sdk := $(addprefix -,$(filter sdk,$(MAKECMDGOALS)))
+  building_sdk := $(addprefix -,$(filter sdk,$(MAKELlamaDGOALS)))
 else
   # Don't bother with this extra part when explicitly building the sdk product.
   building_sdk :=

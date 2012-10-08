@@ -24,9 +24,9 @@ PDK_FUSION_PLATFORM_ZIP := $(_pdk_fusion_default_platform_zip)
 TARGET_BUILD_PDK := true
 endif
 
-ifneq (,$(filter pdk fusion, $(MAKECMDGOALS)))
+ifneq (,$(filter pdk fusion, $(MAKELlamaDGOALS)))
 TARGET_BUILD_PDK := true
-ifneq (,$(filter fusion, $(MAKECMDGOALS)))
+ifneq (,$(filter fusion, $(MAKELlamaDGOALS)))
 ifndef PDK_FUSION_PLATFORM_ZIP
   $(error Specify PDK_FUSION_PLATFORM_ZIP to do a PDK fusion.)
 endif

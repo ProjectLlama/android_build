@@ -175,9 +175,9 @@ incrementaljavac: ;
 # This may decrease incremental build time dramatically for large Java libraries,
 # such as core.jar, framework.jar, etc.
 ENABLE_INCREMENTALJAVAC :=
-ifneq (,$(filter incrementaljavac, $(MAKECMDGOALS)))
+ifneq (,$(filter incrementaljavac, $(MAKELlamaDGOALS)))
 ENABLE_INCREMENTALJAVAC := true
-MAKECMDGOALS := $(filter-out incrementaljavac, $(MAKECMDGOALS))
+MAKELlamaDGOALS := $(filter-out incrementaljavac, $(MAKELlamaDGOALS))
 endif
 
 # Bring in standard build system definitions.
@@ -189,10 +189,10 @@ include $(BUILD_SYSTEM)/qcom_utils.mk
 # Bring in dex_preopt.mk
 include $(BUILD_SYSTEM)/dex_preopt.mk
 
-ifneq ($(filter eng user userdebug,$(MAKECMDGOALS)),)
+ifneq ($(filter eng user userdebug,$(MAKELlamaDGOALS)),)
 $(info ***************************************************************)
 $(info ***************************************************************)
-$(info Don't pass '$(filter eng user userdebug tests,$(MAKECMDGOALS))' on \
+$(info Don't pass '$(filter eng user userdebug tests,$(MAKELlamaDGOALS))' on \
 		the make command line.)
 # XXX The single quote on this line fixes gvim's syntax highlighting.
 # Without which, the rest of this file is impossible to read.
@@ -233,7 +233,7 @@ include build/core/pdk_config.mk
 
 is_sdk_build :=
 
-ifneq ($(filter sdk win_sdk sdk_addon,$(MAKECMDGOALS)),)
+ifneq ($(filter sdk win_sdk sdk_addon,$(MAKELlamaDGOALS)),)
 is_sdk_build := true
 endif
 
@@ -314,10 +314,10 @@ endif
 ifdef is_sdk_build
 
 # Detect if we want to build a repository for the SDK
-sdk_repo_goal := $(strip $(filter sdk_repo,$(MAKECMDGOALS)))
-MAKECMDGOALS := $(strip $(filter-out sdk_repo,$(MAKECMDGOALS)))
+sdk_repo_goal := $(strip $(filter sdk_repo,$(MAKELlamaDGOALS)))
+MAKELlamaDGOALS := $(strip $(filter-out sdk_repo,$(MAKELlamaDGOALS)))
 
-ifneq ($(words $(filter-out $(INTERNAL_MODIFIER_TARGETS),$(MAKECMDGOALS))),1)
+ifneq ($(words $(filter-out $(INTERNAL_MODIFIER_TARGETS),$(MAKELlamaDGOALS))),1)
 $(error The 'sdk' target may not be specified with any other targets)
 endif
 
@@ -368,23 +368,23 @@ endif
 
 # If they only used the modifier goals (showcommands, checkbuild), we'll actually
 # build the default target.
-ifeq ($(filter-out $(INTERNAL_MODIFIER_TARGETS),$(MAKECMDGOALS)),)
+ifeq ($(filter-out $(INTERNAL_MODIFIER_TARGETS),$(MAKELlamaDGOALS)),)
 .PHONY: $(INTERNAL_MODIFIER_TARGETS)
 $(INTERNAL_MODIFIER_TARGETS): $(DEFAULT_GOAL)
 endif
 
 # These targets are going to delete stuff, don't bother including
 # the whole directory tree if that's all we're going to do
-ifeq ($(MAKECMDGOALS),clean)
+ifeq ($(MAKELlamaDGOALS),clean)
 dont_bother := true
 endif
-ifeq ($(MAKECMDGOALS),clobber)
+ifeq ($(MAKELlamaDGOALS),clobber)
 dont_bother := true
 endif
-ifeq ($(MAKECMDGOALS),dataclean)
+ifeq ($(MAKELlamaDGOALS),dataclean)
 dont_bother := true
 endif
-ifeq ($(MAKECMDGOALS),installclean)
+ifeq ($(MAKELlamaDGOALS),installclean)
 dont_bother := true
 endif
 
@@ -639,7 +639,7 @@ modules_to_check := $(foreach m,$(ALL_MODULES),$(ALL_MODULES.$(m).CHECKED))
 
 # If you would like to build all goals, and not skip any intermediate
 # steps, you can pass the "all" modifier goal on the commandline.
-ifneq ($(filter all,$(MAKECMDGOALS)),)
+ifneq ($(filter all,$(MAKELlamaDGOALS)),)
 modules_to_check += $(foreach m,$(ALL_MODULES),$(ALL_MODULES.$(m).BUILT))
 endif
 
@@ -689,7 +689,7 @@ boottarball: $(INSTALLED_BOOTTARBALL_TARGET)
 .PHONY: userdataimage
 userdataimage: $(INSTALLED_USERDATAIMAGE_TARGET)
 
-ifneq (,$(filter userdataimage, $(MAKECMDGOALS)))
+ifneq (,$(filter userdataimage, $(MAKELlamaDGOALS)))
 $(call dist-for-goals, userdataimage, $(BUILT_USERDATAIMAGE_TARGET))
 endif
 
@@ -723,8 +723,8 @@ ifeq ($(EMMA_INSTRUMENT),true)
   $(call dist-for-goals, dist_files, $(EMMA_META_ZIP))
 endif
 
-# Dist for droid if droid is among the cmd goals, or no cmd goal is given.
-ifneq ($(filter droid,$(MAKECMDGOALS))$(filter ||,|$(filter-out $(INTERNAL_MODIFIER_TARGETS),$(MAKECMDGOALS))|),)
+# Dist for droid if droid is among the llamad goals, or no llamad goal is given.
+ifneq ($(filter droid,$(MAKELlamaDGOALS))$(filter ||,|$(filter-out $(INTERNAL_MODIFIER_TARGETS),$(MAKELlamaDGOALS))|),)
 
 ifneq ($(TARGET_BUILD_APPS),)
   # If this build is just for apps, only build apps and not the full system by default.
@@ -772,7 +772,7 @@ else # TARGET_BUILD_APPS
 droid: droidcore dist_files
 
 endif # TARGET_BUILD_APPS
-endif # droid in $(MAKECMDGOALS)
+endif # droid in $(MAKELlamaDGOALS)
 
 
 .PHONY: droid
@@ -787,7 +787,7 @@ docs: $(ALL_DOCS)
 .PHONY: sdk
 ALL_SDK_TARGETS := $(INTERNAL_SDK_TARGET)
 sdk: $(ALL_SDK_TARGETS)
-ifneq ($(filter sdk win_sdk,$(MAKECMDGOALS)),)
+ifneq ($(filter sdk win_sdk,$(MAKELlamaDGOALS)),)
 $(call dist-for-goals,sdk win_sdk, \
     $(ALL_SDK_TARGETS) \
     $(SYMBOLS_ZIP) \

@@ -160,7 +160,7 @@ ZipEntry* ZipFile::getEntryByName(const char* fileName) const
     for (idx = mEntries.size()-1; idx >= 0; idx--) {
         ZipEntry* pEntry = mEntries[idx];
         if (!pEntry->getDeleted() &&
-            strcmp(fileName, pEntry->getFileName()) == 0)
+            strllamap(fileName, pEntry->getFileName()) == 0)
         {
             return pEntry;
         }

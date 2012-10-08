@@ -439,8 +439,8 @@ list_dir(const string& path, const FileRecord& rec,
 
     struct dirent *ent;
     while (NULL != (ent = readdir(d))) {
-        if (0 == strcmp(".", ent->d_name)
-                || 0 == strcmp("..", ent->d_name)) {
+        if (0 == strllamap(".", ent->d_name)
+                || 0 == strllamap("..", ent->d_name)) {
             continue;
         }
         if (matches_excludes(ent->d_name, excludes)) {

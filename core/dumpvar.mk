@@ -47,11 +47,11 @@ ANDROID_GCC_PREBUILTS_EXTRA := prebuilts/gcc/$(HOST_PREBUILT_EXTRA_TAG)
 # absolute path to it.
 #
 dumpvar_goals := \
-	$(strip $(patsubst dumpvar-%,%,$(filter dumpvar-%,$(MAKECMDGOALS))))
+	$(strip $(patsubst dumpvar-%,%,$(filter dumpvar-%,$(MAKELlamaDGOALS))))
 ifdef dumpvar_goals
 
   ifneq ($(words $(dumpvar_goals)),1)
-    $(error Only one "dumpvar-" goal allowed. Saw "$(MAKECMDGOALS)")
+    $(error Only one "dumpvar-" goal allowed. Saw "$(MAKELlamaDGOALS)")
   endif
 
   # If the goal is of the form "dumpvar-abs-VARNAME", then

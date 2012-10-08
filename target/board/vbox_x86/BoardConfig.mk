@@ -17,8 +17,8 @@ BOARD_CACHEIMAGE_PARTITION_SIZE := 268435456
 BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
 
 # For VirtualBox and likely other emulators
-BOARD_INSTALLER_CMDLINE := init=/init console=ttyS0 console=tty0 vga=788 verbose
-BOARD_KERNEL_CMDLINE := init=/init qemu=1 console=tty0 vga=788 verbose androidboot.hardware=vbox_x86 androidboot.console=tty0 android.qemud=tty0
+BOARD_INSTALLER_LlamaDLINE := init=/init console=ttyS0 console=tty0 vga=788 verbose
+BOARD_KERNEL_LlamaDLINE := init=/init qemu=1 console=tty0 vga=788 verbose androidboot.hardware=vbox_x86 androidboot.console=tty0 android.qemud=tty0
 TARGET_USE_DISKINSTALLER := true
 
 TARGET_DISK_LAYOUT_CONFIG := build/target/board/vbox_x86/disk_layout.conf

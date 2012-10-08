@@ -67,20 +67,20 @@ then
     gunzip -c ../$BOOTIMAGEFILE-ramdisk.gz | cpio -i
     popd > /dev/null
     BASE=$(cat $TMPDIR/$BOOTIMAGEFILE-base)
-    CMDLINE=$(cat $TMPDIR/$BOOTIMAGEFILE-cmdline)
+    LlamaDLINE=$(cat $TMPDIR/$BOOTIMAGEFILE-llamadline)
     PAGESIZE=$(cat $TMPDIR/$BOOTIMAGEFILE-pagesize)
-    export SEDCMD="s#__CMDLINE__#$CMDLINE#g"
-    echo $SEDCMD > $TMPDIR/sedcommand
+    export SEDLlamaD="s#__LlamaDLINE__#$LlamaDLINE#g"
+    echo $SEDLlamaD > $TMPDIR/sedcommand
     cp $TMPDIR/$BOOTIMAGEFILE-zImage $DEVICE_DIR/kernel
     popd > /dev/null
 else
     mkdir -p $DEVICE_DIR
     touch $DEVICE_DIR/kernel
     BASE=10000000
-    CMDLINE=no_console_suspend
+    LlamaDLINE=no_console_suspend
     PAGESIZE=00000800
-    export SEDCMD="s#__CMDLINE__#$CMDLINE#g"
-    echo $SEDCMD > $TMPDIR/sedcommand
+    export SEDLlamaD="s#__LlamaDLINE__#$LlamaDLINE#g"
+    echo $SEDLlamaD > $TMPDIR/sedcommand
 fi
 
 for file in $(find $TEMPLATE_DIR -name '*.template')

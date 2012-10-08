@@ -197,7 +197,7 @@ def DumpInfoDict(d):
     print "%-25s = (%s) %s" % (k, type(v).__name__, v)
 
 def BuildBootableImage(sourcedir, fs_config_file):
-  """Take a kernel, cmdline, and ramdisk directory from the input (in
+  """Take a kernel, llamadline, and ramdisk directory from the input (in
   'sourcedir'), and turn them into a boot image.  Return the image
   data, or None if sourcedir does not appear to contains files for
   building the requested image."""
@@ -210,10 +210,10 @@ def BuildBootableImage(sourcedir, fs_config_file):
   img = tempfile.NamedTemporaryFile()
 
   if os.access(fs_config_file, os.F_OK):
-    cmd = ["mkbootfs", "-f", fs_config_file, os.path.join(sourcedir, "RAMDISK")]
+    llamad = ["mkbootfs", "-f", fs_config_file, os.path.join(sourcedir, "RAMDISK")]
   else:
-    cmd = ["mkbootfs", os.path.join(sourcedir, "RAMDISK")]
-  p1 = Run(cmd, stdout=subprocess.PIPE)
+    llamad = ["mkbootfs", os.path.join(sourcedir, "RAMDISK")]
+  p1 = Run(llamad, stdout=subprocess.PIPE)
   p2 = Run(["minigzip"],
            stdin=p1.stdout, stdout=ramdisk_img.file.fileno())
 
@@ -225,40 +225,40 @@ def BuildBootableImage(sourcedir, fs_config_file):
   """check if uboot is requested"""
   fn = os.path.join(sourcedir, "ubootargs")
   if os.access(fn, os.F_OK):
-    cmd = ["mkimage"]
+    llamad = ["mkimage"]
     for argument in open(fn).read().rstrip("\n").split(" "):
-      cmd.append(argument)
-    cmd.append("-d")
-    cmd.append(os.path.join(sourcedir, "kernel")+":"+ramdisk_img.name)
-    cmd.append(img.name)
+      llamad.append(argument)
+    llamad.append("-d")
+    llamad.append(os.path.join(sourcedir, "kernel")+":"+ramdisk_img.name)
+    llamad.append(img.name)
 
   else:
-    cmd = ["mkbootimg", "--kernel", os.path.join(sourcedir, "kernel")]
+    llamad = ["mkbootimg", "--kernel", os.path.join(sourcedir, "kernel")]
 
-    fn = os.path.join(sourcedir, "cmdline")
+    fn = os.path.join(sourcedir, "llamadline")
     if os.access(fn, os.F_OK):
-      cmd.append("--cmdline")
-      cmd.append(open(fn).read().rstrip("\n"))
+      llamad.append("--llamadline")
+      llamad.append(open(fn).read().rstrip("\n"))
 
     fn = os.path.join(sourcedir, "base")
     if os.access(fn, os.F_OK):
-      cmd.append("--base")
-      cmd.append(open(fn).read().rstrip("\n"))
+      llamad.append("--base")
+      llamad.append(open(fn).read().rstrip("\n"))
 
     fn = os.path.join(sourcedir, "pagesize")
     if os.access(fn, os.F_OK):
-      cmd.append("--pagesize")
-      cmd.append(open(fn).read().rstrip("\n"))
+      llamad.append("--pagesize")
+      llamad.append(open(fn).read().rstrip("\n"))
 
     fn = os.path.join(sourcedir, "ramdiskaddr")
     if os.access(fn, os.F_OK):
-      cmd.append("--ramdiskaddr")
-      cmd.append(open(fn).read().rstrip("\n"))
+      llamad.append("--ramdiskaddr")
+      llamad.append(open(fn).read().rstrip("\n"))
 
-    cmd.extend(["--ramdisk", ramdisk_img.name,
+    llamad.extend(["--ramdisk", ramdisk_img.name,
                 "--output", img.name])
 
-  p = Run(cmd, stdout=subprocess.PIPE)
+  p = Run(llamad, stdout=subprocess.PIPE)
   p.communicate()
   assert p.returncode == 0, "mkbootimg of %s image failed" % (
       os.path.basename(sourcedir),)
@@ -303,10 +303,10 @@ def UnzipTemp(filename, pattern=None):
   OPTIONS.tempfiles.append(tmp)
 
   def unzip_to_dir(filename, dirname):
-    cmd = ["unzip", "-o", "-q", filename, "-d", dirname]
+    llamad = ["unzip", "-o", "-q", filename, "-d", dirname]
     if pattern is not None:
-      cmd.append(pattern)
-    p = Run(cmd, stdout=subprocess.PIPE)
+      llamad.append(pattern)
+    p = Run(llamad, stdout=subprocess.PIPE)
     p.communicate()
     if p.returncode != 0:
       raise ExternalError("failed to unzip input target-files \"%s\"" %
@@ -368,7 +368,7 @@ def SignFile(input_name, output_name, key, password, align=None,
   zip file.
   """
 
-  if os.environ.get('CM_FAST_BUILD', False):
+  if os.environ.get('Llama_FAST_BUILD', False):
     shutil.copy(input_name, output_name)
     return
 
@@ -383,18 +383,18 @@ def SignFile(input_name, output_name, key, password, align=None,
 
   check = (sys.maxsize > 2**32)
   if check is True:
-    cmd = ["java", "-Xmx2048m", "-jar",
+    llamad = ["java", "-Xmx2048m", "-jar",
            os.path.join(OPTIONS.search_path, "framework", "signapk.jar")]
   else:
-    cmd = ["java", "-Xmx1024m", "-jar",
+    llamad = ["java", "-Xmx1024m", "-jar",
            os.path.join(OPTIONS.search_path, "framework", "signapk.jar")]
 
   if whole_file:
-    cmd.append("-w")
-  cmd.extend([key + ".x509.pem", key + ".pk8",
+    llamad.append("-w")
+  llamad.extend([key + ".x509.pem", key + ".pk8",
               input_name, sign_name])
 
-  p = Run(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+  p = Run(llamad, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
   if password is not None:
     password += "\n"
   p.communicate(password)
@@ -787,13 +787,13 @@ class Difference(object):
     try:
       ptemp = tempfile.NamedTemporaryFile()
       if isinstance(diff_program, list):
-        cmd = copy.copy(diff_program)
+        llamad = copy.copy(diff_program)
       else:
-        cmd = [diff_program]
-      cmd.append(stemp.name)
-      cmd.append(ttemp.name)
-      cmd.append(ptemp.name)
-      p = Run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        llamad = [diff_program]
+      llamad.append(stemp.name)
+      llamad.append(ttemp.name)
+      llamad.append(ptemp.name)
+      p = Run(llamad, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       _, err = p.communicate()
       if err or p.returncode != 0:
         print "WARNING: failure running %s:\n%s\n" % (diff_program, err)

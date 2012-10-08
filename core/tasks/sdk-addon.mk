@@ -102,7 +102,7 @@ $(call dist-for-goals, sdk_addon, $(full_target))
 endif
 
 else # addon_name
-ifneq ($(filter sdk_addon,$(MAKECMDGOALS)),)
+ifneq ($(filter sdk_addon,$(MAKELlamaDGOALS)),)
 $(error Trying to build sdk_addon, but product '$(INTERNAL_PRODUCT)' does not define one)
 endif
 endif # addon_name

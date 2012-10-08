@@ -11,13 +11,13 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - jgrep:   Greps on all local Java files.
 - resgrep: Greps on all local res/*.xml files.
 - godir:   Go to the directory containing a file.
-- cmremote: Add git remote for CM Gerrit Review.
-- cmgerrit: A Git wrapper that fetches/pushes patch from/to CM Gerrit Review.
-- cmrebase: Rebase a Gerrit change and push it again.
+- llamaremote: Add git remote for Llama Gerrit Review.
+- llamagerrit: A Git wrapper that fetches/pushes patch from/to Llama Gerrit Review.
+- llamarebase: Rebase a Gerrit change and push it again.
 - aospremote: Add git remote for matching AOSP repository.
 - mka:      Builds using SCHED_BATCH on all processors.
 - mkap:     Builds the module(s) using mka and pushes them to the device.
-- cmka:     Cleans and builds using mka.
+- llamaka:     Cleans and builds using mka.
 - reposync: Parallel repo sync using ionice and SCHED_BATCH.
 
 Look at the source to view more functions. The complete list is:
@@ -64,17 +64,17 @@ function check_product()
         return
     fi
 
-    if (echo -n $1 | grep -q -e "^cm_") ; then
-       CM_BUILD=$(echo -n $1 | sed -e 's/^cm_//g')
-       NAM_VARIANT=$(echo -n $1 | sed -e 's/^cm_//g')
+    if (echo -n $1 | grep -q -e "^llama_") ; then
+       Llama_BUILD=$(echo -n $1 | sed -e 's/^llama_//g')
+       NAM_VARIANT=$(echo -n $1 | sed -e 's/^llama_//g')
     elif (echo -n $1 | grep -q -e "htc_") ; then
-       CM_BUILD=
+       Llama_BUILD=
        NAM_VARIANT=$(echo -n $1)
     else 
-       CM_BUILD=
+       Llama_BUILD=
        NAM_VARIANT=
     fi
-    export CM_BUILD
+    export Llama_BUILD
     export NAM_VARIANT
 
     CALLED_FROM_SETUP=true BUILD_SYSTEM=build/core \
@@ -457,7 +457,7 @@ function print_lunch_menu()
        echo "  (ohai, koush!)"
     fi
     echo
-    if [ "z${CM_DEVICES_ONLY}" != "z" ]; then
+    if [ "z${Llama_DEVICES_ONLY}" != "z" ]; then
        echo "Breakfast menu... pick a combo:"
     else
        echo "Lunch menu... pick a combo:"
@@ -471,7 +471,7 @@ function print_lunch_menu()
         i=$(($i+1))
     done
 
-    if [ "z${CM_DEVICES_ONLY}" != "z" ]; then
+    if [ "z${Llama_DEVICES_ONLY}" != "z" ]; then
        echo "... and don't forget the bacon!"
     fi
 
@@ -482,7 +482,7 @@ function brunch()
 {
     breakfast $*
     if [ $? -eq 0 ]; then
-        export CM_FAST_BUILD=1
+        export Llama_FAST_BUILD=1
         mka bacon
     else
         echo "No such item in brunch menu. Try 'breakfast'"
@@ -494,10 +494,10 @@ function brunch()
 function breakfast()
 {
     target=$1
-    CM_DEVICES_ONLY="true"
+    Llama_DEVICES_ONLY="true"
     unset LUNCH_MENU_CHOICES
     add_lunch_combo full-eng
-    for f in `/bin/ls vendor/cm/vendorsetup.sh 2> /dev/null`
+    for f in `/bin/ls vendor/llama/vendorsetup.sh 2> /dev/null`
         do
             echo "including $f"
             . $f
@@ -513,8 +513,8 @@ function breakfast()
             # A buildtype was specified, assume a full device name
             lunch $target
         else
-            # This is probably just the CM model name
-            lunch cm_$target-userdebug
+            # This is probably just the Llama model name
+            lunch llama_$target-userdebug
         fi
     fi
     return $?
@@ -563,7 +563,7 @@ function lunch()
     check_product $product
     if [ $? -ne 0 ]
     then
-        # if we can't find a product, try to grab it off the CM github
+        # if we can't find a product, try to grab it off the Llama github
         T=$(gettop)
         pushd $T > /dev/null
         build/tools/roomservice.py $product
@@ -649,8 +649,8 @@ function tapas()
 function eat()
 {
     if [ "$OUT" ] ; then
-        MODVERSION=`sed -n -e'/ro\.cm\.version/s/.*=//p' $OUT/system/build.prop`
-        ZIPFILE=cm-$MODVERSION.zip
+        MODVERSION=`sed -n -e'/ro\.llama\.version/s/.*=//p' $OUT/system/build.prop`
+        ZIPFILE=llama-$MODVERSION.zip
         ZIPPATH=$OUT/$ZIPFILE
         if [ ! -f $ZIPPATH ] ; then
             echo "Nothing to eat"
@@ -917,12 +917,12 @@ function gdbclient()
                echo ""
        fi
 
-       echo >|"$OUT_ROOT/gdbclient.cmds" "set solib-absolute-prefix $OUT_SYMBOLS"
-       echo >>"$OUT_ROOT/gdbclient.cmds" "set solib-search-path $OUT_SO_SYMBOLS:$OUT_SO_SYMBOLS/hw:$OUT_SO_SYMBOLS/ssl/engines"
-       echo >>"$OUT_ROOT/gdbclient.cmds" "target remote $PORT"
-       echo >>"$OUT_ROOT/gdbclient.cmds" ""
+       echo >|"$OUT_ROOT/gdbclient.llamads" "set solib-absolute-prefix $OUT_SYMBOLS"
+       echo >>"$OUT_ROOT/gdbclient.llamads" "set solib-search-path $OUT_SO_SYMBOLS:$OUT_SO_SYMBOLS/hw:$OUT_SO_SYMBOLS/ssl/engines"
+       echo >>"$OUT_ROOT/gdbclient.llamads" "target remote $PORT"
+       echo >>"$OUT_ROOT/gdbclient.llamads" ""
 
-       $ANDROID_TOOLCHAIN/$GDB -x "$OUT_ROOT/gdbclient.cmds" "$OUT_EXE_SYMBOLS/$EXE"
+       $ANDROID_TOOLCHAIN/$GDB -x "$OUT_ROOT/gdbclient.llamads" "$OUT_EXE_SYMBOLS/$EXE"
   else
        echo "Unable to determine build system output dir."
    fi
@@ -1222,9 +1222,9 @@ function godir () {
     cd $T/$pathname
 }
 
-function cmremote()
+function llamaremote()
 {
-    git remote rm cmremote 2> /dev/null
+    git remote rm llamaremote 2> /dev/null
     if [ ! -d .git ]
     then
         echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
@@ -1239,16 +1239,16 @@ function cmremote()
           return 0
         fi
     fi
-    CMUSER=`git config --get review.review.cyanogenmod.com.username`
-    if [ -z "$CMUSER" ]
+    LlamaUSER=`git config --get review.review.projectllama.com.username`
+    if [ -z "$LlamaUSER" ]
     then
-        git remote add cmremote ssh://review.cyanogenmod.com:29418/$GERRIT_REMOTE
+        git remote add llamaremote ssh://review.projectllama.com:29418/$GERRIT_REMOTE
     else
-        git remote add cmremote ssh://$CMUSER@review.cyanogenmod.com:29418/$GERRIT_REMOTE
+        git remote add llamaremote ssh://$LlamaUSER@review.projectllama.com:29418/$GERRIT_REMOTE
     fi
-    echo You can now push to "cmremote".
+    echo You can now push to "llamaremote".
 }
-export -f cmremote
+export -f llamaremote
 
 function aospremote()
 {
@@ -1291,7 +1291,7 @@ function installboot()
     adb wait-for-device
     adb remount
     adb wait-for-device
-    if (adb shell cat /system/build.prop | grep -q "ro.cm.device=$CM_BUILD");
+    if (adb shell cat /system/build.prop | grep -q "ro.llama.device=$Llama_BUILD");
     then
         adb push $OUT/boot.img /cache/
         for i in $OUT/system/lib/modules/*;
@@ -1302,7 +1302,7 @@ function installboot()
         adb shell chmod 644 /system/lib/modules/*
         echo "Installation complete."
     else
-        echo "The connected device does not appear to be $CM_BUILD, run away!"
+        echo "The connected device does not appear to be $Llama_BUILD, run away!"
     fi
 }
 
@@ -1326,8 +1326,8 @@ function makerecipe() {
   if [ "$REPO_REMOTE" == "github" ]
   then
     pwd
-    cmremote
-    git push cmremote HEAD:refs/heads/'$1'
+    llamaremote
+    git push llamaremote HEAD:refs/heads/'$1'
   fi
   '
 
@@ -1336,12 +1336,12 @@ function makerecipe() {
   cd ..
 }
 
-function cmgerrit() {
+function llamagerrit() {
     if [ $# -eq 0 ]; then
         $FUNCNAME help
         return 1
     fi
-    local user=`git config --get review.review.cyanogenmod.com.username`
+    local user=`git config --get review.review.projectllama.com.username`
     local review=`git config --get remote.github.review`
     local project=`git config --get remote.github.projectname`
     local command=$1
@@ -1375,9 +1375,9 @@ EOF
                 return
             fi
             case $1 in
-                __cmg_*) echo "For internal use only." ;;
+                __llamag_*) echo "For internal use only." ;;
                 changes|for)
-                    if [ "$FUNCNAME" = "cmgerrit" ]; then
+                    if [ "$FUNCNAME" = "llamagerrit" ]; then
                         echo "'$FUNCNAME $1' is deprecated."
                     fi
                     ;;
@@ -1408,7 +1408,7 @@ HEAD will be pushed from local if omitted.
 EOF
                     ;;
                 *)
-                    $FUNCNAME __cmg_err_not_supported $1 && return
+                    $FUNCNAME __llamag_err_not_supported $1 && return
                     cat <<EOF
 usage: $FUNCNAME $1 [OPTIONS] CHANGE-ID[/PATCH-SET][{@|^|~|:}ARG] [-- ARGS]
 
@@ -1420,8 +1420,8 @@ EOF
                     ;;
             esac
             ;;
-        __cmg_get_ref)
-            $FUNCNAME __cmg_err_no_arg $command $# && return 1
+        __llamag_get_ref)
+            $FUNCNAME __llamag_err_no_arg $command $# && return 1
             local change_id patchset_id hash
             case $1 in
                 */*)
@@ -1440,16 +1440,16 @@ EOF
             echo "refs/changes/$hash/$change_id/$patchset_id"
             ;;
         fetch|pull)
-            $FUNCNAME __cmg_err_no_arg $command $# help && return 1
-            $FUNCNAME __cmg_err_not_repo && return 1
+            $FUNCNAME __llamag_err_no_arg $command $# help && return 1
+            $FUNCNAME __llamag_err_not_repo && return 1
             local change=$1
             shift
             git $command $@ http://$review/p/$project \
-                $($FUNCNAME __cmg_get_ref $change) || return 1
+                $($FUNCNAME __llamag_get_ref $change) || return 1
             ;;
         push)
-            $FUNCNAME __cmg_err_no_arg $command $# help && return 1
-            $FUNCNAME __cmg_err_not_repo && return 1
+            $FUNCNAME __llamag_err_no_arg $command $# help && return 1
+            $FUNCNAME __llamag_err_not_repo && return 1
             if [ -z "$user" ]; then
                 echo >&2 "Gerrit username not found."
                 return 1
@@ -1470,11 +1470,11 @@ EOF
                 $local_branch:refs/for/$remote_branch || return 1
             ;;
         changes|for)
-            if [ "$FUNCNAME" = "cmgerrit" ]; then
+            if [ "$FUNCNAME" = "llamagerrit" ]; then
                 echo >&2 "'$FUNCNAME $command' is deprecated."
             fi
             ;;
-        __cmg_err_no_arg)
+        __llamag_err_no_arg)
             if [ $# -lt 2 ]; then
                 echo >&2 "'$FUNCNAME $command' missing argument."
             elif [ $2 -eq 0 ]; then
@@ -1487,15 +1487,15 @@ EOF
                 return 1
             fi
             ;;
-        __cmg_err_not_repo)
+        __llamag_err_not_repo)
             if [ -z "$review" -o -z "$project" ]; then
                 echo >&2 "Not currently in any reviewable repository."
             else
                 return 1
             fi
             ;;
-        __cmg_err_not_supported)
-            $FUNCNAME __cmg_err_no_arg $command $# && return
+        __llamag_err_not_supported)
+            $FUNCNAME __llamag_err_no_arg $command $# && return
             case $1 in
                 #TODO: filter more git commands that don't use refname
                 init|add|rm|mv|status|clone|remote|bisect|config|stash)
@@ -1506,9 +1506,9 @@ EOF
             ;;
     #TODO: other special cases?
         *)
-            $FUNCNAME __cmg_err_not_supported $command && return 1
-            $FUNCNAME __cmg_err_no_arg $command $# help && return 1
-            $FUNCNAME __cmg_err_not_repo && return 1
+            $FUNCNAME __llamag_err_not_supported $command && return 1
+            $FUNCNAME __llamag_err_no_arg $command $# help && return 1
+            $FUNCNAME __llamag_err_not_repo && return 1
             local args="$@"
             local change pre_args refs_arg post_args
             case "$args" in
@@ -1569,15 +1569,15 @@ EOF
     esac
 }
 
-function cmrebase() {
+function llamarebase() {
     local repo=$1
     local refs=$2
     local pwd="$(pwd)"
     local dir="$(gettop)/$repo"
 
     if [ -z $repo ] || [ -z $refs ]; then
-        echo "CyanogenMod Gerrit Rebase Usage: "
-        echo "      cmrebase <path to project> <patch IDs on Gerrit>"
+        echo "ProjectLlama Gerrit Rebase Usage: "
+        echo "      llamarebase <path to project> <patch IDs on Gerrit>"
         echo "      The patch IDs appear on the Gerrit commands that are offered."
         echo "      They consist on a series of numbers and slashes, after the text"
         echo "      refs/changes. For example, the ID in the following command is 26/8126/2"
@@ -1598,7 +1598,7 @@ function cmrebase() {
     echo "Bringing it up to date..."
     repo sync .
     echo "Fetching change..."
-    git fetch "http://review.cyanogenmod.com/p/$repo" "refs/changes/$refs" && git cherry-pick FETCH_HEAD
+    git fetch "http://review.projectllama.com/p/$repo" "refs/changes/$refs" && git cherry-pick FETCH_HEAD
     if [ "$?" != "0" ]; then
         echo "Error cherry-picking. Not uploading!"
         return
@@ -1621,7 +1621,7 @@ function mka() {
     esac
 }
 
-function cmka() {
+function llamaka() {
     if [ ! -z "$1" ]; then
         for i in "$@"; do
             case $i in
@@ -1661,13 +1661,13 @@ function repodiff() {
       'echo "$REPO_PATH ($REPO_REMOTE)"; git diff ${diffopts} 2>/dev/null ;'
 }
 
-# Credit for color strip sed: http://goo.gl/BoIcm
+# Credit for color strip sed: http://goo.gl/BoIllama
 function dopush()
 {
     local func=$1
     shift
 
-    # Get product name from cm_<product>
+    # Get product name from llama_<product>
     PRODUCT=`echo $TARGET_PRODUCT | tr "_" "\n" | tail -n 1`
 
     adb start-server # Prevent unexpected starting server message from adb get-state in the next line
@@ -1713,7 +1713,7 @@ function dopush()
 alias mmp='dopush mm'
 alias mmmp='dopush mmm'
 alias mkap='dopush mka'
-alias cmkap='dopush cmka'
+alias llamakap='dopush llamaka'
 
 
 # Force JAVA_HOME to point to java 1.6 if it isn't already set
