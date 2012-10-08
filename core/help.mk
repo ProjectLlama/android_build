@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-ifeq ($(MAKELlamaDGOALS),help)
+ifeq ($(MAKECMDGOALS),help)
 dont_bother := true
 endif
-ifeq ($(MAKELlamaDGOALS),out)
+ifeq ($(MAKECMDGOALS),out)
 dont_bother := true
 endif
 

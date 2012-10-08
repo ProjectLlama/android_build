@@ -35,12 +35,12 @@ packages_overlay_changed := $(shell build/tools/diff_package_overlays.py \
     $(current_all_packages_config) $(current_package_overlay_config) \
     $(previous_package_overlay_config))
 ifneq (,$(packages_overlay_changed))
-overlay_cleanup_llamad := $(strip rm -rf $(foreach p, $(packages_overlay_changed),\
+overlay_cleanup_cmd := $(strip rm -rf $(foreach p, $(packages_overlay_changed),\
     $(TARGET_OUT_COMMON_INTERMEDIATES)/APPS/$(p)_intermediates))
 $(info *** Overlay change detected, clean shared intermediate files...)
-$(info *** $(overlay_cleanup_llamad))
-$(shell $(overlay_cleanup_llamad))
-overlay_cleanup_llamad :=
+$(info *** $(overlay_cleanup_cmd))
+$(shell $(overlay_cleanup_cmd))
+overlay_cleanup_cmd :=
 endif
 packages_overlay_changed :=
 endif

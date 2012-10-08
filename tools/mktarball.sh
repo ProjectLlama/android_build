@@ -7,7 +7,7 @@
 # $5: target tarball name (usually $(3).bz2)
 
 if [ $# -ne 5 ]; then
-    echo "Error: wrong number of arguments in llamad: $0 $* "
+    echo "Error: wrong number of arguments in cmd: $0 $* "
     exit 1
 fi
 

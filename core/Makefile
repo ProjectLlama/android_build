@@ -20,7 +20,7 @@ else
   FILE_NAME_TAG := $(BUILD_NUMBER)
 endif
 
-is_tests_build := $(filter tests,$(MAKELlamaDGOALS))
+is_tests_build := $(filter tests,$(MAKECMDGOALS))
 
 # -----------------------------------------------------------------
 # Define rules to copy PRODUCT_COPY_FILES defined by the product.
@@ -165,7 +165,7 @@ $(INSTALLED_BUILD_PROP_TARGET): $(BUILDINFO_SH) $(INTERNAL_BUILD_ID_MAKEFILE) $(
 	@mkdir -p $(dir $@)
 	$(hide) TARGET_BUILD_TYPE="$(TARGET_BUILD_VARIANT)" \
 			TARGET_DEVICE="$(TARGET_DEVICE)" \
-			Llama_DEVICE="$(TARGET_DEVICE)" \
+			CM_DEVICE="$(TARGET_DEVICE)" \
 			PRODUCT_NAME="$(TARGET_PRODUCT)" \
 			PRODUCT_BRAND="$(PRODUCT_BRAND)" \
 			PRODUCT_DEFAULT_LANGUAGE="$(call default-locale-language,$(PRODUCT_LOCALES))" \
@@ -385,9 +385,9 @@ INTERNAL_BOOTIMAGE_ARGS := \
 
 INTERNAL_BOOTIMAGE_FILES := $(filter-out --%,$(INTERNAL_BOOTIMAGE_ARGS))
 
-BOARD_KERNEL_LlamaDLINE := $(strip $(BOARD_KERNEL_LlamaDLINE))
-ifdef BOARD_KERNEL_LlamaDLINE
-  INTERNAL_BOOTIMAGE_ARGS += --llamadline "$(BOARD_KERNEL_LlamaDLINE)"
+BOARD_KERNEL_CMDLINE := $(strip $(BOARD_KERNEL_CMDLINE))
+ifdef BOARD_KERNEL_CMDLINE
+  INTERNAL_BOOTIMAGE_ARGS += --cmdline "$(BOARD_KERNEL_CMDLINE)"
 endif
 
 BOARD_KERNEL_BASE := $(strip $(BOARD_KERNEL_BASE))
@@ -653,8 +653,8 @@ INTERNAL_RECOVERYIMAGE_ARGS := \
 	--ramdisk $(recovery_ramdisk)
 
 # Assumes this has already been stripped
-ifdef BOARD_KERNEL_LlamaDLINE
-  INTERNAL_RECOVERYIMAGE_ARGS += --llamadline "$(BOARD_KERNEL_LlamaDLINE)"
+ifdef BOARD_KERNEL_CMDLINE
+  INTERNAL_RECOVERYIMAGE_ARGS += --cmdline "$(BOARD_KERNEL_CMDLINE)"
 endif
 ifdef BOARD_KERNEL_BASE
   INTERNAL_RECOVERYIMAGE_ARGS += --base $(BOARD_KERNEL_BASE)
@@ -814,10 +814,10 @@ $(INSTALLED_FILES_FILE): $(FULL_SYSTEMIMAGE_DEPS)
 
 .PHONY: installed-file-list
 installed-file-list: $(INSTALLED_FILES_FILE)
-ifneq ($(filter sdk win_sdk,$(MAKELlamaDGOALS)),)
+ifneq ($(filter sdk win_sdk,$(MAKECMDGOALS)),)
 $(call dist-for-goals, sdk win_sdk, $(INSTALLED_FILES_FILE))
 endif
-ifneq ($(filter sdk_addon,$(MAKELlamaDGOALS)),)
+ifneq ($(filter sdk_addon,$(MAKECMDGOALS)),)
 $(call dist-for-goals, sdk_addon, $(INSTALLED_FILES_FILE))
 endif
 
@@ -849,7 +849,7 @@ SYSTEMIMAGE_SOURCE_DIR := $(TARGET_OUT)
 ifneq ($(INSTALLED_RECOVERYIMAGE_TARGET),)
 intermediates := $(call intermediates-dir-for,PACKAGING,recovery_patch)
 ifndef BOARD_CUSTOM_BOOTIMG_MK
-ifeq ($(Llama_BUILD),)
+ifeq ($(CM_BUILD),)
 RECOVERY_FROM_BOOT_PATCH := $(intermediates)/recovery_from_boot.p
 else
 RECOVERY_FROM_BOOT_PATCH :=
@@ -875,13 +875,13 @@ $(INSTALLED_SYSTEMIMAGE): $(BUILT_SYSTEMIMAGE) $(RECOVERY_FROM_BOOT_PATCH) | $(A
 systemimage: $(INSTALLED_SYSTEMIMAGE)
 
 .PHONY: systemimage-nodeps snod
-systemimage-nodeps snod: $(filter-out systemimage-nodeps snod,$(MAKELlamaDGOALS)) \
+systemimage-nodeps snod: $(filter-out systemimage-nodeps snod,$(MAKECMDGOALS)) \
 	            | $(INTERNAL_USERIMAGES_DEPS)
 	@echo "make $@: ignoring dependencies"
 	$(call build-systemimage-target,$(INSTALLED_SYSTEMIMAGE))
 	$(hide) $(call assert-max-image-size,$(INSTALLED_SYSTEMIMAGE),$(BOARD_SYSTEMIMAGE_PARTITION_SIZE),yaffs)
 
-ifneq (,$(filter systemimage-nodeps snod, $(MAKELlamaDGOALS)))
+ifneq (,$(filter systemimage-nodeps snod, $(MAKECMDGOALS)))
 ifeq (true,$(WITH_DEXPREOPT))
 $(warning Warning: with dexpreopt enabled, you may need a full rebuild.)
 endif
@@ -908,14 +908,14 @@ $(INSTALLED_SYSTEMTARBALL_TARGET): $(FS_GET_STATS) $(INTERNAL_SYSTEMIMAGE_FILES)
 
 .PHONY: systemtarball-nodeps
 systemtarball-nodeps: $(FS_GET_STATS) \
-                      $(filter-out systemtarball-nodeps stnod,$(MAKELlamaDGOALS))
+                      $(filter-out systemtarball-nodeps stnod,$(MAKECMDGOALS))
 	$(build-systemtarball-target)
 
 .PHONY: stnod
 stnod: systemtarball-nodeps
 
 # For platform-java goal, add platform as well
-ifneq (,$(filter platform-java, $(MAKELlamaDGOALS)))
+ifneq (,$(filter platform-java, $(MAKECMDGOALS)))
 PLATFORM_ZIP_ADD_JAVA := true
 endif
 
@@ -941,7 +941,7 @@ platform: $(INSTALLED_PLATFORM_ZIP)
 platform-java: platform
 
 # Dist the platform.zip
-ifneq (,$(filter platform platform-java, $(MAKELlamaDGOALS)))
+ifneq (,$(filter platform platform-java, $(MAKECMDGOALS)))
 $(call dist-for-goals, platform platform-java, $(INSTALLED_PLATFORM_ZIP))
 endif
 
@@ -951,7 +951,7 @@ define build-boottarball-target
     $(hide) echo "Target boot fs tarball: $(INSTALLED_BOOTTARBALL_TARGET)"
     $(hide) mkdir -p $(PRODUCT_OUT)/boot
     $(hide) cp -f $(INTERNAL_BOOTIMAGE_FILES) $(PRODUCT_OUT)/boot/.
-    $(hide) echo $(BOARD_KERNEL_LlamaDLINE) > $(PRODUCT_OUT)/boot/llamadline
+    $(hide) echo $(BOARD_KERNEL_CMDLINE) > $(PRODUCT_OUT)/boot/cmdline
     $(hide) $(MKTARBALL) $(FS_GET_STATS) \
                  $(PRODUCT_OUT) boot $(PRIVATE_BOOT_TAR) \
                  $(INSTALLED_BOOTTARBALL_TARGET)
@@ -969,7 +969,7 @@ $(INSTALLED_BOOTTARBALL_TARGET): $(FS_GET_STATS) $(INTERNAL_BOOTIMAGE_FILES)
 
 .PHONY: boottarball-nodeps btnod
 boottarball-nodeps btnod: $(FS_GET_STATS) \
-                      $(filter-out boottarball-nodeps btnod,$(MAKELlamaDGOALS))
+                      $(filter-out boottarball-nodeps btnod,$(MAKECMDGOALS))
 	$(build-boottarball-target)
 
 
@@ -1163,8 +1163,8 @@ ifdef INSTALLED_2NDBOOTLOADER_TARGET
 	$(hide) $(ACP) \
 		$(INSTALLED_2NDBOOTLOADER_TARGET) $(zip_root)/RECOVERY/second
 endif
-ifdef BOARD_KERNEL_LlamaDLINE
-	$(hide) echo "$(BOARD_KERNEL_LlamaDLINE)" > $(zip_root)/RECOVERY/llamadline
+ifdef BOARD_KERNEL_CMDLINE
+	$(hide) echo "$(BOARD_KERNEL_CMDLINE)" > $(zip_root)/RECOVERY/cmdline
 endif
 ifdef BOARD_KERNEL_BASE
 	$(hide) echo "$(BOARD_KERNEL_BASE)" > $(zip_root)/RECOVERY/base
@@ -1191,8 +1191,8 @@ ifdef INSTALLED_2NDBOOTLOADER_TARGET
 	$(hide) $(ACP) \
 		$(INSTALLED_2NDBOOTLOADER_TARGET) $(zip_root)/BOOT/second
 endif
-ifdef BOARD_KERNEL_LlamaDLINE
-	$(hide) echo "$(BOARD_KERNEL_LlamaDLINE)" > $(zip_root)/BOOT/llamadline
+ifdef BOARD_KERNEL_CMDLINE
+	$(hide) echo "$(BOARD_KERNEL_CMDLINE)" > $(zip_root)/BOOT/cmdline
 endif
 ifdef BOARD_KERNEL_BASE
 	$(hide) echo "$(BOARD_KERNEL_BASE)" > $(zip_root)/BOOT/base
@@ -1276,7 +1276,7 @@ else
     OTA_FROM_TARGET_SCRIPT := $(TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT)
 endif
 
-ifneq ($(Llama_BUILD),)
+ifneq ($(CM_BUILD),)
     $(INTERNAL_OTA_PACKAGE_TARGET): backuptool := true
 else
     $(INTERNAL_OTA_PACKAGE_TARGET): backuptool := false
@@ -1311,7 +1311,7 @@ ifneq ($(TARGET_CUSTOM_RELEASETOOL),)
 	$(hide) OTAPACKAGE=$(INTERNAL_OTA_PACKAGE_TARGET) APKCERTS=$(APKCERTS_FILE) $(TARGET_CUSTOM_RELEASETOOL)
 else
 	@echo "Running releasetool..."
-	$(hide) OTAPACKAGE=$(INTERNAL_OTA_PACKAGE_TARGET) APKCERTS=$(APKCERTS_FILE) ./vendor/llama/tools/squisher
+	$(hide) OTAPACKAGE=$(INTERNAL_OTA_PACKAGE_TARGET) APKCERTS=$(APKCERTS_FILE) ./vendor/cm/tools/squisher
 endif
 
 # -----------------------------------------------------------------
@@ -1389,14 +1389,14 @@ tests-zip-package: $(BUILT_TESTS_ZIP_PACKAGE)
 .PHONY: tests-build-target
 tests-build-target: $(BUILT_TESTS_ZIP_PACKAGE)
 
-ifneq (,$(filter $(MAKELlamaDGOALS),tests-build-target))
+ifneq (,$(filter $(MAKECMDGOALS),tests-build-target))
   $(call dist-for-goals, tests-build-target, \
           $(BUILT_TESTS_ZIP_PACKAGE))
 endif
 
 .PHONY: tests
 tests: $(BUILT_TESTS_ZIP_PACKAGE)
-ifneq (,$(filter tests, $(MAKELlamaDGOALS)))
+ifneq (,$(filter tests, $(MAKECMDGOALS)))
 $(call dist-for-goals, tests, $(BUILT_TESTS_ZIP_PACKAGE))
 endif
 
@@ -1472,7 +1472,7 @@ $(INTERNAL_EMULATOR_PACKAGE_TARGET): $(INTERNAL_EMULATOR_PACKAGE_FILES)
 # Old PDK stuffs, retired
 # The pdk package (Platform Development Kit)
 
-#ifneq (,$(filter pdk,$(MAKELlamaDGOALS)))
+#ifneq (,$(filter pdk,$(MAKECMDGOALS)))
 #  include development/pdk/Pdk.mk
 #endif
 
@@ -1617,7 +1617,7 @@ $(INTERNAL_SDK_TARGET): $(deps)
 MAIN_SDK_NAME := $(sdk_name)
 MAIN_SDK_DIR  := $(sdk_dir)
 MAIN_SDK_ZIP  := $(INTERNAL_SDK_TARGET)
-ifneq ($(filter win_sdk,$(MAKELlamaDGOALS)),)
+ifneq ($(filter win_sdk,$(MAKECMDGOALS)),)
 include $(TOPDIR)development/build/tools/windows_sdk.mk
 endif
 

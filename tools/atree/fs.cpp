@@ -56,8 +56,8 @@ remove_recursively(const string& path)
 
         struct dirent *ent;
         while (NULL != (ent = readdir(d))) {
-            if (0 == strllamap(".", ent->d_name)
-                    || 0 == strllamap("..", ent->d_name)) {
+            if (0 == strcmp(".", ent->d_name)
+                    || 0 == strcmp("..", ent->d_name)) {
                 continue;
             }
             string full = path;
@@ -153,9 +153,9 @@ int
 strip_file(const string& path)
 {
     // Default strip command to run is "strip" unless overridden by the STRIP env var.
-    const char* strip_llamad = getenv("STRIP");
-    if (!strip_llamad || !strip_llamad[0]) {
-        strip_llamad = "strip";
+    const char* strip_cmd = getenv("STRIP");
+    if (!strip_cmd || !strip_cmd[0]) {
+        strip_cmd = "strip";
     }
     pid_t pid = fork();
     if (pid == -1) {
@@ -163,7 +163,7 @@ strip_file(const string& path)
         return -1;
     } else if (pid == 0) {
         // Exec in the child. Only returns if execve failed.
-        return execlp(strip_llamad, strip_llamad, path.c_str(), (char *)NULL);
+        return execlp(strip_cmd, strip_cmd, path.c_str(), (char *)NULL);
     } else {
         // Wait for child pid and return its exit code.
         int status;

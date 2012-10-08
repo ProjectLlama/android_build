@@ -130,10 +130,10 @@ void to_565_rle(void)
 
 int main(int argc, char **argv)
 {
-    if ((argc == 2) && (!strllamap(argv[1],"-rle"))) {
+    if ((argc == 2) && (!strcmp(argv[1],"-rle"))) {
         to_565_rle();
     } else {
-        if (argc > 2 && (!strllamap(argv[1], "-w"))) {
+        if (argc > 2 && (!strcmp(argv[1], "-w"))) {
             to_565_raw_dither(atoi(argv[2]));
         } else {
             to_565_raw();

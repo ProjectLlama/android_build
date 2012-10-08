@@ -15,7 +15,7 @@
 #
 
 define filter-ide-goals
-$(strip $(filter $(1)-%,$(MAKELlamaDGOALS)))
+$(strip $(filter $(1)-%,$(MAKECMDGOALS)))
 endef
 
 define filter-ide-modules

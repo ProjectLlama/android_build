@@ -14,4 +14,4 @@ export LD_LIBRARY_PATH=$PREV_LD_LIBRARY_PATH
 # Start binderproc (or whatever sub-command is being run)
 # inside of gdb, giving gdb an initial command script to
 # automatically run the process without user intervention.
-gdb -q -x $2/process_wrapper_gdb.llamads --args "$@"
+gdb -q -x $2/process_wrapper_gdb.cmds --args "$@"

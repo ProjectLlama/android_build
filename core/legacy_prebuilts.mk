@@ -33,7 +33,7 @@ GRANDFATHERED_ALL_PREBUILT := \
 	blacklist.conf \
 	bmgr \
 	bp.img \
-	brllama_guci_drv \
+	brcm_guci_drv \
 	bypassfactory \
 	cdt.bin \
 	chat-ril \
@@ -66,8 +66,8 @@ GRANDFATHERED_ALL_PREBUILT := \
 	lbl \
 	libEGL_POWERVR_SGX530_121.so \
 	libEGL_tegra.so \
-	libGLESv1_Llama_POWERVR_SGX530_121.so \
-	libGLESv1_Llama_tegra.so \
+	libGLESv1_CM_POWERVR_SGX530_121.so \
+	libGLESv1_CM_tegra.so \
 	libGLESv2_POWERVR_SGX530_121.so \
 	libGLESv2_tegra.so \
 	libmoto_ril.so \
@@ -97,7 +97,7 @@ GRANDFATHERED_ALL_PREBUILT := \
 	svc \
 	sys \
 	system \
-	tllamad \
+	tcmd \
 	ueventd.goldfish.rc \
 	ueventd.olympus.rc \
 	ueventd.rc \

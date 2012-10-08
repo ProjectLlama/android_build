@@ -54,7 +54,7 @@ main(int argc, const char *argv[])
 		exit(-1);
 	}
 
-	if (!strllamap(argv[2], "1"))
+	if (!strcmp(argv[2], "1"))
 		is_dir = 1;
 
 	fs_config(argv[3], is_dir, &uid, &gid, &perms);

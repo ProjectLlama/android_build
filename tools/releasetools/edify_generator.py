@@ -35,13 +35,13 @@ class EdifyGenerator(object):
     x.mounts = self.mounts
     return x
 
-  @statillamaethod
-  def _WordWrap(llamad, linelen=80):
-    """'llamad' should be a function call with null characters after each
-    parameter (eg, "somefun(foo,\0bar,\0baz)").  This function wraps llamad
+  @staticmethod
+  def _WordWrap(cmd, linelen=80):
+    """'cmd' should be a function call with null characters after each
+    parameter (eg, "somefun(foo,\0bar,\0baz)").  This function wraps cmd
     to a given line length, replacing nulls with spaces and/or newlines
     to format it nicely."""
-    indent = llamad.index("(")+1
+    indent = cmd.index("(")+1
     out = []
     first = True
     x = re.compile("^(.{,%d})\0" % (linelen-indent,))
@@ -49,17 +49,17 @@ class EdifyGenerator(object):
       if not first:
         out.append(" " * indent)
       first = False
-      m = x.search(llamad)
+      m = x.search(cmd)
       if not m:
-        parts = llamad.split("\0", 1)
+        parts = cmd.split("\0", 1)
         out.append(parts[0]+"\n")
         if len(parts) == 1:
           break
         else:
-          llamad = parts[1]
+          cmd = parts[1]
           continue
       out.append(m.group(1)+"\n")
-      llamad = llamad[m.end():]
+      cmd = cmd[m.end():]
 
     return "".join(out).replace("\0", " ").rstrip("\n")
 
@@ -72,12 +72,12 @@ class EdifyGenerator(object):
     """Assert that the current system build fingerprint is one of *fp."""
     if not fp:
       raise ValueError("must specify some fingerprints")
-    llamad = ('assert(' +
+    cmd = ('assert(' +
            ' ||\0'.join([('file_getprop("/system/build.prop", '
                          '"ro.build.fingerprint") == "%s"')
                         % i for i in fp]) +
            ');')
-    self.script.append(self._WordWrap(llamad))
+    self.script.append(self._WordWrap(cmd))
 
   def AssertOlderBuild(self, timestamp):
     """Assert that the build on the device is older (or the same as)
@@ -87,19 +87,19 @@ class EdifyGenerator(object):
 
   def AssertDevice(self, device):
     """Assert that the device identifier is the given string."""
-    llamad = ('assert(' +
+    cmd = ('assert(' +
            ' || \0'.join(['getprop("ro.product.device") == "%s" || getprop("ro.build.product") == "%s"'
                          % (i, i) for i in device.split(",")]) +
            ');')
-    self.script.append(self._WordWrap(llamad))
+    self.script.append(self._WordWrap(cmd))
 
   def AssertSomeBootloader(self, *bootloaders):
     """Asert that the bootloader version is one of *bootloaders."""
-    llamad = ("assert(" +
+    cmd = ("assert(" +
            " ||\0".join(['getprop("ro.bootloader") == "%s"' % (b,)
                          for b in bootloaders]) +
            ");")
-    self.script.append(self._WordWrap(llamad))
+    self.script.append(self._WordWrap(cmd))
 
   def RunBackup(self, command):
     self.script.append('package_extract_file("system/bin/backuptool.sh", "/tmp/backuptool.sh");')
@@ -195,8 +195,8 @@ class EdifyGenerator(object):
   def DeleteFiles(self, file_list):
     """Delete all files in file_list."""
     if not file_list: return
-    llamad = "delete(" + ",\0".join(['"%s"' % (i,) for i in file_list]) + ");"
-    self.script.append(self._WordWrap(llamad))
+    cmd = "delete(" + ",\0".join(['"%s"' % (i,) for i in file_list]) + ");"
+    self.script.append(self._WordWrap(cmd))
 
   def ApplyPatch(self, srcfile, tgtfile, tgtsize, tgtsha1, *patchpairs):
     """Apply binary patches (in *patchpairs) to the given srcfile to
@@ -204,13 +204,13 @@ class EdifyGenerator(object):
     source file."""
     if len(patchpairs) % 2 != 0 or len(patchpairs) == 0:
       raise ValueError("bad patches given to ApplyPatch")
-    llamad = ['apply_patch("%s",\0"%s",\0%s,\0%d'
+    cmd = ['apply_patch("%s",\0"%s",\0%s,\0%d'
            % (srcfile, tgtfile, tgtsha1, tgtsize)]
     for i in range(0, len(patchpairs), 2):
-      llamad.append(',\0%s, package_extract_file("%s")' % patchpairs[i:i+2])
-    llamad.append(');')
-    llamad = "".join(llamad)
-    self.script.append(self._WordWrap(llamad))
+      cmd.append(',\0%s, package_extract_file("%s")' % patchpairs[i:i+2])
+    cmd.append(');')
+    cmd = "".join(cmd)
+    self.script.append(self._WordWrap(cmd))
 
   def WriteRawImage(self, mount_point, fn):
     """Write the given package file into the partition for the given
@@ -253,9 +253,9 @@ class EdifyGenerator(object):
       by_dest.setdefault(d, []).append(l)
 
     for dest, links in sorted(by_dest.iteritems()):
-      llamad = ('symlink("%s", ' % (dest,) +
+      cmd = ('symlink("%s", ' % (dest,) +
              ",\0".join(['"' + i + '"' for i in sorted(links)]) + ");")
-      self.script.append(self._WordWrap(llamad))
+      self.script.append(self._WordWrap(cmd))
 
   def AppendExtra(self, extra):
     """Append text verbatim to the output script."""

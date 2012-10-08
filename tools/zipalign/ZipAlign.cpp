@@ -106,7 +106,7 @@ static int process(const char* inFileName, const char* outFileName,
     //    alignment, inFileName, outFileName, force);
 
     /* this mode isn't supported -- do a trivial check */
-    if (strllamap(inFileName, outFileName) == 0) {
+    if (strcmp(inFileName, outFileName) == 0) {
         fprintf(stderr, "Input and output can't be same file\n");
         return 1;
     }

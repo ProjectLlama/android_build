@@ -487,8 +487,8 @@ int copyDirectory(const char* src, const char* dst, const struct stat* pSrcStat,
         if (ent == NULL)
             break;
 
-        if (strllamap(ent->d_name, ".") == 0 ||
-            strllamap(ent->d_name, "..") == 0)
+        if (strcmp(ent->d_name, ".") == 0 ||
+            strcmp(ent->d_name, "..") == 0)
         {
             continue;
         }

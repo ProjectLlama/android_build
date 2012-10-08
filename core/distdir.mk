@@ -20,9 +20,9 @@
 .PHONY: dist
 dist: ;
 
-dist_goal := $(strip $(filter dist,$(MAKELlamaDGOALS)))
-MAKELlamaDGOALS := $(strip $(filter-out dist,$(MAKELlamaDGOALS)))
-ifeq (,$(strip $(filter-out $(INTERNAL_MODIFIER_TARGETS),$(MAKELlamaDGOALS))))
+dist_goal := $(strip $(filter dist,$(MAKECMDGOALS)))
+MAKECMDGOALS := $(strip $(filter-out dist,$(MAKECMDGOALS)))
+ifeq (,$(strip $(filter-out $(INTERNAL_MODIFIER_TARGETS),$(MAKECMDGOALS))))
 # The commandline was something like "make dist" or "make dist showcommands".
 # Add a dependency on a real target.
 dist: $(DEFAULT_GOAL)

@@ -62,7 +62,7 @@ GRANDFATHERED_USER_MODULES += \
 	bluetoothd \
 	bmgr \
 	bootanimation \
-	brllama_patchram_plus \
+	brcm_patchram_plus \
 	bugreport \
 	cfassembler \
 	check_stack \
@@ -128,8 +128,8 @@ GRANDFATHERED_USER_MODULES += \
 	frameworks-core-util-lib \
 	fsck_msdos \
 	fs_get_stats \
-	fw_bllama4329_apsta.bin \
-	fw_bllama4329.bin \
+	fw_bcm4329_apsta.bin \
+	fw_bcm4329.bin \
 	genext2fs \
 	gps.mahimahi \
 	gralloc.default \
@@ -238,7 +238,7 @@ GRANDFATHERED_USER_MODULES += \
 	libgdbus_static \
 	libgif \
 	libGLES_android \
-	libGLESv1_Llama \
+	libGLESv1_CM \
 	libGLESv2 \
 	libglib \
 	libgui \

@@ -280,50 +280,50 @@ void ZipEntry::setDataInfo(long uncompLen, long compLen, unsigned long crc32,
 bool ZipEntry::compareHeaders(void) const
 {
     if (mCDE.mVersionToExtract != mLFH.mVersionToExtract) {
-        ALOGV("llamap: VersionToExtract\n");
+        ALOGV("cmp: VersionToExtract\n");
         return false;
     }
     if (mCDE.mGPBitFlag != mLFH.mGPBitFlag) {
-        ALOGV("llamap: GPBitFlag\n");
+        ALOGV("cmp: GPBitFlag\n");
         return false;
     }
     if (mCDE.mCompressionMethod != mLFH.mCompressionMethod) {
-        ALOGV("llamap: CompressionMethod\n");
+        ALOGV("cmp: CompressionMethod\n");
         return false;
     }
     if (mCDE.mLastModFileTime != mLFH.mLastModFileTime) {
-        ALOGV("llamap: LastModFileTime\n");
+        ALOGV("cmp: LastModFileTime\n");
         return false;
     }
     if (mCDE.mLastModFileDate != mLFH.mLastModFileDate) {
-        ALOGV("llamap: LastModFileDate\n");
+        ALOGV("cmp: LastModFileDate\n");
         return false;
     }
     if (mCDE.mCRC32 != mLFH.mCRC32) {
-        ALOGV("llamap: CRC32\n");
+        ALOGV("cmp: CRC32\n");
         return false;
     }
     if (mCDE.mCompressedSize != mLFH.mCompressedSize) {
-        ALOGV("llamap: CompressedSize\n");
+        ALOGV("cmp: CompressedSize\n");
         return false;
     }
     if (mCDE.mUncompressedSize != mLFH.mUncompressedSize) {
-        ALOGV("llamap: UncompressedSize\n");
+        ALOGV("cmp: UncompressedSize\n");
         return false;
     }
     if (mCDE.mFileNameLength != mLFH.mFileNameLength) {
-        ALOGV("llamap: FileNameLength\n");
+        ALOGV("cmp: FileNameLength\n");
         return false;
     }
 #if 0       // this seems to be used for padding, not real data
     if (mCDE.mExtraFieldLength != mLFH.mExtraFieldLength) {
-        ALOGV("llamap: ExtraFieldLength\n");
+        ALOGV("cmp: ExtraFieldLength\n");
         return false;
     }
 #endif
     if (mCDE.mFileName != NULL) {
-        if (strllamap((char*) mCDE.mFileName, (char*) mLFH.mFileName) != 0) {
-            ALOGV("llamap: FileName\n");
+        if (strcmp((char*) mCDE.mFileName, (char*) mLFH.mFileName) != 0) {
+            ALOGV("cmp: FileName\n");
             return false;
         }
     }
