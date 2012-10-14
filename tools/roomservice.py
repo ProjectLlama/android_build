@@ -138,7 +138,7 @@ def add_to_manifest(repositories):
 
 def fetch_dependencies(repo_path):
     print 'Looking for dependencies'
-    dependencies_path = repo_path + '/cm.dependencies'
+    dependencies_path = repo_path + '/llama.dependencies'
     syncable_repos = []
 
     if os.path.exists(dependencies_path):
