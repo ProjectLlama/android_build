@@ -33,13 +33,13 @@ except:
     device = product
 
 if not depsonly:
-    print "Device %s not found. Attempting to retrieve device repository from CyanogenMod Github (http://github.com/CyanogenMod)." % device
+    print "Device %s not found. Attempting to retrieve device repository from ProjectLlama Github (http://github.com/ProjectLlama)." % device
 
 repositories = []
 
 page = 1
 while not depsonly:
-    result = json.loads(urllib2.urlopen("https://api.github.com/users/CyanogenMod/repos?page=%d" % page).read())
+    result = json.loads(urllib2.urlopen("https://api.github.com/users/ProjectLlama/repos?page=%d" % page).read())
     if len(result) == 0:
         break
     for res in result:
