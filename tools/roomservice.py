@@ -33,7 +33,7 @@ except:
     device = product
 
 if not depsonly:
-    print "Device %s not found. Attempting to retrieve device repository from ProjectLlama/CyanogenMod Github." % device
+    print "Device %s not found. Attempting to retrieve device repository from ProjectLlama Github (https://github.com/ProjectLlama)." % device
 
 repositories = []
 
@@ -116,12 +116,12 @@ def add_to_manifest(repositories):
         repo_name = repository['repository']
         repo_target = repository['target_path']
         if exists_in_tree(lm, repo_name):
-            print 'ProjejctLlama/%s already exists' % (repo_name)
+            print 'ProjectLlama/%s already exists' % (repo_name)
             continue
 
         print 'Adding dependency: ProjectLlama/%s -> %s' % (repo_name, repo_target)
         project = ElementTree.Element("project", attrib = { "path": repo_target,
-            "remote": "github", "name": repo_name, "revision": "jellybean" })
+            "remote": "github", "name": "ProjectLlama/%s" % repo_name, "revision": "jellybean" })
 
         if 'branch' in repository:
             project.set('revision',repository['branch'])
@@ -147,7 +147,7 @@ def fetch_dependencies(repo_path):
         fetch_list = []
 
         for dependency in dependencies:
-            if not is_in_manifest(dependency['repository']):
+            if not is_in_manifest("ProjectLlama/%s" % dependency['repository']):
                 fetch_list.append(dependency)
                 syncable_repos.append(dependency['target_path'])
 
