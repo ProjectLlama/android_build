@@ -1375,7 +1375,7 @@ $(BUILT_TESTS_ZIP_PACKAGE): zip_root := $(intermediates)/$(name)
 $(BUILT_TESTS_ZIP_PACKAGE): \
     $(INSTALLED_USERDATAIMAGE_TARGET) \
     | $(ACP)
-	@echo -e ${CL_YLW}"Package test files:"${CL_RST} $@"
+	@echo -e ${CL_YLW}"Package test files:"${CL_RST}" $@"
 	$(hide) rm -rf $@ $(zip_root)
 	$(hide) mkdir -p $(dir $@) $(zip_root)
 	@# Contents of the data image
