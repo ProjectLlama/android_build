@@ -87,7 +87,7 @@ ifneq ($(USE_CCACHE),)
 
   # search executable
   ifneq ($(strip $(wildcard prebuilts/misc/$(CCACHE_HOST_EXTRA_TAG)/ccache/ccache)),)
-    ccache := prebuilts/misc/$(CCACHE_HOST_EXTRA_TAG)/ccache/ccache
+    ccache := $(shell $(which "ccache"))
   else
     ifneq ($(strip $(wildcard prebuilts/misc/$(CCACHE_HOST_TAG)/ccache/ccache)),)
       ccache := prebuilts/misc/$(CCACHE_HOST_TAG)/ccache/ccache
