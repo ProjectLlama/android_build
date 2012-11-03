@@ -451,8 +451,18 @@ add_lunch_combo vbox_x86-eng
 function print_lunch_menu()
 {
     local uname=$(uname)
+    local user=$($USER)
     echo
     echo "You're building on" $uname
+    if [ "$(user)" = "dudeman1996" ] ; then
+       echo "  (ohai, Ivan!)"
+    fi
+    if [ "$(user)" = "benjamingwynn" ] ; then
+       echo "  (ohai, Ben!)"
+    fi
+    if [ "$(user)" = "helicopter88" ] ; then
+       echo "  (ohai, heli!)"
+    fi
     if [ "$(uname)" = "Darwin" ] ; then
        echo "  (ohai, koush!)"
     fi
